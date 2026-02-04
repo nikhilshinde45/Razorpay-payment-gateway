@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RazorPay Payment Demo</title>
+</head>
+<body>
+  <h1>Pay with Razorpay</h1>
+  Amount <input type ="number" id="pay-amount">
+  <button id="rzp-button">Pay</button>
+  
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <script>
+    document.querySelector("#rzp-button").onclick = async function (){
+        var amount =document.querySelector("#pay-amount").value;
+
+        const order = await fetch('/create-order',{
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body: JSON.stringify({amount:amount})
+        }).then(res=>res.json());
+      
+        console.log(order);
+
+        
+
+    }
+  </script>
+</body>
+</html>
