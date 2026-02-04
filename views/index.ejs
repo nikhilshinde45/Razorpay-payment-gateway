@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RazorPay Payment Demo</title>
+</head>
+<body>
+  <h1>Pay with Razorpay</h1>
+  Amount <input type ="number" id="pay-amount">
+  <button id="rzp-button">Pay</button>
+  
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <script>
+    document.querySelector("#rzp-button").onclick = async function (){
+        var amount =document.querySelector("#pay-amount").value;
+
+        const order = await fetch('user/create-order',{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body: JSON.stringify({amount:amount})
+        }).then(res=>res.json());
+      
+       //send order info to razorpay server
+       const options = {
+        key:"<%=key%>",
+        amount:order.amount,
+        currency:order.currency,
+        name:"Techie Store",
+        description:"Test Transaction",
+        order_id:order.id,
+        handler:async function (response){
+          console.log(response);
+          //when payment success razorpay sends some data like payment.id .. which is still not trusted ,verification should be done 
+
+          const verify = await fetch('/user/verify-payment',{
+            method: "POST",
+            headers:{ "Content-Type":"application/json"},
+            body: JSON.stringify(response)
+          });
+
+          //If response has came and verified then 
+          //i.e Real or Fake payment
+
+          if(verify.ok){
+            //After payment success
+            const paymentId = response.razorpay_payment
+            window.location.href =` /user/payment-success?paymentId=${paymentId}`;
+
+          }else{
+            //if fake payment or server error
+            alert("Payment Verification Failed");
+          }
+
+
+
+        },
+        theme:{color:'#3399cc'}
+       }
+
+       //creation of instance wich will use razorpay
+       const rzp1 = new Razorpay(options);
+      rzp1.open();
+        
+
+    }
+  </script>
+</body>
+</html>
